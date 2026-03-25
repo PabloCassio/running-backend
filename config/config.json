@@ -12,7 +12,7 @@
     "username": "maratona_user",
     "password": "maratona_password",
     "database": "maratona_test",
-    "host": "postgres",
+    "host": "localhost",
     "port": 5432,
     "dialect": "postgres",
     "logging": false
