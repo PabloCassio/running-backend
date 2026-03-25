@@ -77,6 +77,38 @@ services:
       - maratona-backend-network
     command: nodemon src/server.js
 
+  # Backend test runner
+  backend-test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: maratona-backend-test
+    environment:
+      NODE_ENV: test
+      PORT: 5001
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: maratona_db
+      DB_USER: maratona_user
+      DB_PASSWORD: maratona_password
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: test_jwt_secret_key_for_testing_only
+      JWT_EXPIRES_IN: 1h
+      JWT_REFRESH_SECRET: test_refresh_secret_key_for_testing
+      JWT_REFRESH_EXPIRES_IN: 7d
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - maratona-backend-network
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: npm run test:ci
+
   # PGAdmin para gerenciamento do banco
   pgadmin:
     image: dpage/pgadmin4

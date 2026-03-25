@@ -1,5 +1,4 @@
 import bcrypt from 'bcryptjs';
-import { validationResult } from 'express-validator';
 import { Op } from 'sequelize';
 import { Request, Response } from 'express';
 import User from '../models/user.model';
@@ -50,19 +49,6 @@ interface ChangePasswordRequest {
  */
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {
-    // Validate request
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      res.status(400).json({
-        error: {
-          message: 'Validation failed',
-          code: 'VALIDATION_ERROR',
-          details: errors.array()
-        }
-      });
-      return;
-    }
-
     const { email, password, firstName, lastName, username, birthDate, country, city } = req.body as RegisterRequest;
 
     // Check if user already exists
@@ -147,19 +133,6 @@ export const register = async (req: Request, res: Response): Promise<void> => {
  */
 export const login = async (req: Request, res: Response): Promise<void> => {
   try {
-    // Validate request
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      res.status(400).json({
-        error: {
-          message: 'Validation failed',
-          code: 'VALIDATION_ERROR',
-          details: errors.array()
-        }
-      });
-      return;
-    }
-
     const { email, password } = req.body as LoginRequest;
 
     // Find user
@@ -287,7 +260,7 @@ export const refreshToken = async (req: Request, res: Response): Promise<void> =
       }
     });
   } catch (error: any) {
-    console.error('Token refresh error:', error);
+    logger.error('Token refresh error', { error: error.message, stack: error.stack });
     res.status(500).json({
       error: {
         message: 'Internal server error during token refresh.',
@@ -342,7 +315,7 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
       }
     });
   } catch (error: any) {
-    console.error('Get profile error:', error);
+    logger.error('Get profile error', { error: error.message, stack: error.stack });
     res.status(500).json({
       error: {
         message: 'Internal server error while retrieving profile.',
@@ -423,7 +396,7 @@ export const updateProfile = async (req: Request, res: Response): Promise<void> 
       }
     });
   } catch (error: any) {
-    console.error('Update profile error:', error);
+    logger.error('Update profile error', { error: error.message, stack: error.stack });
     res.status(500).json({
       error: {
         message: 'Internal server error while updating profile.',
@@ -438,19 +411,6 @@ export const updateProfile = async (req: Request, res: Response): Promise<void> 
  */
 export const changePassword = async (req: Request, res: Response): Promise<void> => {
   try {
-    // Validate request
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      res.status(400).json({
-        error: {
-          message: 'Validation failed',
-          code: 'VALIDATION_ERROR',
-          details: errors.array()
-        }
-      });
-      return;
-    }
-
     const user = (req as any).user;
     const { currentPassword, newPassword } = req.body as ChangePasswordRequest;
 
@@ -478,7 +438,7 @@ export const changePassword = async (req: Request, res: Response): Promise<void>
       message: 'Password changed successfully.'
     });
   } catch (error: any) {
-    console.error('Change password error:', error);
+    logger.error('Change password error', { error: error.message, stack: error.stack });
     res.status(500).json({
       error: {
         message: 'Internal server error while changing password.',
@@ -502,7 +462,7 @@ export const logout = async (req: Request, res: Response): Promise<void> => {
       message: 'Logout successful. Please remove tokens from client storage.'
     });
   } catch (error: any) {
-    console.error('Logout error:', error);
+    logger.error('Logout error', { error: error.message, stack: error.stack });
     res.status(500).json({
       error: {
         message: 'Internal server error during logout.',
