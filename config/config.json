@@ -1,0 +1,35 @@
+{
+  "development": {
+    "username": "maratona_user",
+    "password": "maratona_password",
+    "database": "maratona_db",
+    "host": "postgres",
+    "port": 5432,
+    "dialect": "postgres",
+    "logging": true
+  },
+  "test": {
+    "username": "maratona_user",
+    "password": "maratona_password",
+    "database": "maratona_test",
+    "host": "postgres",
+    "port": 5432,
+    "dialect": "postgres",
+    "logging": false
+  },
+  "production": {
+    "username": "maratona_user",
+    "password": "maratona_password",
+    "database": "maratona_db",
+    "host": "postgres",
+    "port": 5432,
+    "dialect": "postgres",
+    "logging": false,
+    "dialectOptions": {
+      "ssl": {
+        "require": true,
+        "rejectUnauthorized": false
+      }
+    }
+  }
+}

@@ -1,0 +1,116 @@
+# Docker Compose para DESENVOLVIMENTO do backend do Maratona Ao Vivo
+# Foco exclusivo em ambiente de desenvolvimento
+
+version: '3.8'
+
+services:
+  # Banco de dados PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: maratona-postgres-backend-dev
+    environment:
+      POSTGRES_DB: maratona_db
+      POSTGRES_USER: maratona_user
+      POSTGRES_PASSWORD: maratona_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - maratona-backend-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U maratona_user -d maratona_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis para cache e sessões
+  redis:
+    image: redis:7-alpine
+    container_name: maratona-redis-backend-dev
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - maratona-backend-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend da aplicação - Modo Desenvolvimento
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: maratona-backend-only-dev
+    ports:
+      - "5000:5000"
+    environment:
+      NODE_ENV: development
+      PORT: 5000
+      CLIENT_URL: http://localhost:3000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: maratona_db
+      DB_USER: maratona_user
+      DB_PASSWORD: maratona_password
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: desenvolvimento_segredo_jwt_alterar_em_producao
+      JWT_EXPIRES_IN: 7d
+      JWT_REFRESH_SECRET: desenvolvimento_refresh_segredo_alterar_tambem
+      JWT_REFRESH_EXPIRES_IN: 30d
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - maratona-backend-network
+    command: nodemon src/server.js
+
+  # PGAdmin para gerenciamento do banco
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: maratona-pgadmin-backend-dev
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@maratona.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - maratona-backend-network
+
+  # Redis Commander para gerenciamento do Redis
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: maratona-redis-commander-backend-dev
+    environment:
+      REDIS_HOSTS: local:redis:6379
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis
+    networks:
+      - maratona-backend-network
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  maratona-backend-network:
+    driver: bridge
+    name: maratona-backend-network
