@@ -77,7 +77,7 @@ services:
       - maratona-backend-network
     command: npm run dev:watch
 
-  # Backend test runner
+  # Backend test runner (executado sob demanda via: docker compose run --rm backend-test)
   backend-test:
     build:
       context: .
@@ -88,7 +88,8 @@ services:
       PORT: 5001
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_NAME: maratona_db
+      DB_NAME: maratona_test
+      DB_TEST_NAME: maratona_test
       DB_USER: maratona_user
       DB_PASSWORD: maratona_password
       REDIS_HOST: redis
@@ -108,33 +109,6 @@ services:
       - .:/app
       - /app/node_modules
     command: npm run test:ci
-
-  # PGAdmin para gerenciamento do banco
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: maratona-pgadmin-backend-dev
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@maratona.com
-      PGADMIN_DEFAULT_PASSWORD: admin123
-    ports:
-      - "5050:80"
-    depends_on:
-      - postgres
-    networks:
-      - maratona-backend-network
-
-  # Redis Commander para gerenciamento do Redis
-  redis-commander:
-    image: rediscommander/redis-commander:latest
-    container_name: maratona-redis-commander-backend-dev
-    environment:
-      REDIS_HOSTS: local:redis:6379
-    ports:
-      - "8081:8081"
-    depends_on:
-      - redis
-    networks:
-      - maratona-backend-network
 
 volumes:
   postgres_data:

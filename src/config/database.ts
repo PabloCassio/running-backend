@@ -4,37 +4,15 @@ import logger from '../utils/logger';
 
 dotenv.config();
 
-interface DatabaseConfig {
-  database: string;
-  username: string;
-  password: string;
-  host: string;
-  port: number;
-  dialect: Dialect;
-  logging: boolean | ((sql: string, timing?: number) => void);
-  pool: {
-    max: number;
-    min: number;
-    acquire: number;
-    idle: number;
-  };
-  dialectOptions?: {
-    ssl?: {
-      require: boolean;
-      rejectUnauthorized: boolean;
-    };
-  };
-  define: {
-    underscored: boolean;
-    freezeTableName: boolean;
-    charset: string;
-    collate: string;
-    timestamps: boolean;
-  };
-}
+export const getDatabaseName = (): string => {
+  if (process.env.NODE_ENV === 'test') {
+    return process.env.DB_TEST_NAME || 'maratona_test';
+  }
+  return process.env.DB_NAME || 'maratona_db';
+};
 
 const sequelize = new Sequelize(
-  process.env.DB_NAME || 'maratona_db',
+  getDatabaseName(),
   process.env.DB_USER || 'postgres',
   process.env.DB_PASSWORD || '',
   {
@@ -46,22 +24,22 @@ const sequelize = new Sequelize(
       max: 10,
       min: 0,
       acquire: 30000,
-      idle: 10000
+      idle: 10000,
     },
     dialectOptions: process.env.NODE_ENV === 'production' ? {
       ssl: {
         require: true,
-        rejectUnauthorized: false
-      }
+        rejectUnauthorized: false,
+      },
     } : {},
     define: {
       underscored: false,
       freezeTableName: true,
       charset: 'utf8',
       collate: 'utf8_general_ci',
-      timestamps: true
-    }
-  }
+      timestamps: true,
+    },
+  },
 );
 
 // Test database connection
@@ -69,22 +47,23 @@ export const testConnection = async (): Promise<boolean> => {
   try {
     await sequelize.authenticate();
     logger.info('✅ Database connection established successfully');
-    
+
     // Sync models (use with caution in production)
     if (process.env.NODE_ENV === 'development') {
       await sequelize.sync({ alter: true });
       logger.info('✅ Database synchronized');
     }
-    
+
     return true;
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as Error;
     logger.error('❌ Unable to connect to the database', {
-      error: error.message,
-      name: error.name,
+      error: err.message,
+      name: err.name,
     });
-    
+
     // Provide helpful error messages
-    if (error.name === 'SequelizeConnectionError') {
+    if (err.name === 'SequelizeConnectionError') {
       logger.warn('💡 Troubleshooting tips:', {
         tips: [
           'Make sure PostgreSQL is running',
@@ -94,7 +73,7 @@ export const testConnection = async (): Promise<boolean> => {
         ],
       });
     }
-    
+
     return false;
   }
 };
