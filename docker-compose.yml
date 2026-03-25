@@ -75,7 +75,7 @@ services:
         condition: service_healthy
     networks:
       - maratona-backend-network
-    command: nodemon src/server.js
+    command: npm run dev:watch
 
   # Backend test runner
   backend-test:
