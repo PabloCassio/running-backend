@@ -34,8 +34,8 @@ class User extends Model<UserAttributes, UserCreationAttributes> implements User
   public id!: string;
   public email!: string;
   public password!: string;
-  public firstName!: string;
-  public lastName!: string;
+  public firstName!: string | null;
+  public lastName!: string | null;
   public username!: string;
   public birthDate?: Date | null;
   public country?: string | null;
@@ -108,11 +108,11 @@ User.init(
     },
     firstName: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     lastName: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     username: {
       type: DataTypes.STRING,

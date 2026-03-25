@@ -20,8 +20,11 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "moduleResolution": "node",
-    "typeRoots": ["./node_modules/@types", "./src/types"],
+    "typeRoots": ["./node_modules/@types"],
     "types": ["node"]
+  },
+  "ts-node": {
+    "files": true
   },
   "include": [
     "src/**/*"

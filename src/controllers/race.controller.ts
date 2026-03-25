@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { Op } from 'sequelize';
+import logger from '../utils/logger';
 import Race from '../models/race.model';
 import RaceParticipation from '../models/raceParticipation.model';
 import User from '../models/user.model';
@@ -61,7 +62,7 @@ export const createRace = async (req: Request, res: Response): Promise<void> => 
       rules
     } = req.body as CreateRaceRequest;
 
-    const organizerId = req.userId as number;
+    const organizerId = req.userId as string;
 
     // Validate date (must be in the future)
     const raceDate = new Date(date);
@@ -104,7 +105,7 @@ export const createRace = async (req: Request, res: Response): Promise<void> => 
       }
     });
   } catch (error) {
-    console.error('Create race error:', error);
+    logger.error('Create race error', { error });
     res.status(500).json({
       error: {
         message: 'Internal server error while creating race.',
@@ -196,7 +197,7 @@ export const getRaces = async (req: Request, res: Response): Promise<void> => {
       }
     });
   } catch (error) {
-    console.error('Get races error:', error);
+    logger.error('Get races error', { error });
     res.status(500).json({
       error: {
         message: 'Internal server error while retrieving races.',
@@ -251,7 +252,7 @@ export const getRaceById = async (req: Request, res: Response): Promise<void> =>
       userParticipation = await RaceParticipation.findOne({
         where: {
           raceId: parseInt(raceId),
-          userId: req.userId as number
+          userId: req.userId as string
         }
       });
     }
@@ -266,7 +267,7 @@ export const getRaceById = async (req: Request, res: Response): Promise<void> =>
       }
     });
   } catch (error) {
-    console.error('Get race by ID error:', error);
+    logger.error('Get race by ID error', { error });
     res.status(500).json({
       error: {
         message: 'Internal server error while retrieving race.',
@@ -335,7 +336,7 @@ export const updateRace = async (req: Request, res: Response): Promise<void> => 
     }
 
     // Update race
-    await race.update(updates);
+    await race.update(updates as any);
 
     // Refresh race data
     await race.reload();
@@ -347,7 +348,7 @@ export const updateRace = async (req: Request, res: Response): Promise<void> => 
       }
     });
   } catch (error) {
-    console.error('Update race error:', error);
+    logger.error('Update race error', { error });
     res.status(500).json({
       error: {
         message: 'Internal server error while updating race.',
@@ -415,7 +416,7 @@ export const deleteRace = async (req: Request, res: Response): Promise<void> => 
       message: 'Race deleted successfully.'
     });
   } catch (error) {
-    console.error('Delete race error:', error);
+    logger.error('Delete race error', { error });
     res.status(500).json({
       error: {
         message: 'Internal server error while deleting race.',
@@ -431,7 +432,7 @@ export const deleteRace = async (req: Request, res: Response): Promise<void> => 
 export const registerForRace = async (req: Request, res: Response): Promise<void> => {
   try {
     const { raceId } = req.params;
-    const userId = req.userId as number;
+    const userId = req.userId as string;
 
     const race = await Race.findByPk(raceId);
 
@@ -504,7 +505,7 @@ export const registerForRace = async (req: Request, res: Response): Promise<void
       }
     });
   } catch (error) {
-    console.error('Register for race error:', error);
+    logger.error('Register for race error', { error });
     res.status(500).json({
       error: {
         message: 'Internal server error while registering for race.',
@@ -520,7 +521,7 @@ export const registerForRace = async (req: Request, res: Response): Promise<void
 export const unregisterFromRace = async (req: Request, res: Response): Promise<void> => {
   try {
     const { raceId } = req.params;
-    const userId = req.userId as number;
+    const userId = req.userId as string;
 
     const race = await Race.findByPk(raceId);
 
@@ -577,7 +578,7 @@ export const unregisterFromRace = async (req: Request, res: Response): Promise<v
       message: 'Successfully unregistered from the race.'
     });
   } catch (error) {
-    console.error('Unregister from race error:', error);
+    logger.error('Unregister from race error', { error });
     res.status(500).json({
       error: {
         message: 'Internal server error while unregistering from race.',
@@ -656,7 +657,7 @@ export const getRaceParticipants = async (req: Request, res: Response): Promise<
       }
     });
   } catch (error) {
-    console.error('Get race participants error:', error);
+    logger.error('Get race participants error', { error });
     res.status(500).json({
       error: {
         message: 'Internal server error while retrieving race participants.',
@@ -672,7 +673,7 @@ export const getRaceParticipants = async (req: Request, res: Response): Promise<
 export const startRace = async (req: Request, res: Response): Promise<void> => {
   try {
     const { raceId } = req.params;
-    const userId = req.userId as number;
+    const userId = req.userId as string;
 
     const race = await Race.findByPk(raceId);
 
@@ -732,7 +733,7 @@ export const startRace = async (req: Request, res: Response): Promise<void> => {
       }
     });
   } catch (error) {
-    console.error('Start race error:', error);
+    logger.error('Start race error', { error });
     res.status(500).json({
       error: {
         message: 'Internal server error while starting race.',
@@ -806,7 +807,7 @@ export const publishRace = async (req: Request, res: Response): Promise<void> =>
       }
     });
   } catch (error) {
-    console.error('Publish race error:', error);
+    logger.error('Publish race error', { error });
     res.status(500).json({
       error: {
         message: 'Internal server error while publishing race.',
@@ -862,7 +863,7 @@ export const cancelRace = async (req: Request, res: Response): Promise<void> => 
     await race.update({
       status: 'cancelled',
       cancellationReason: reason
-    });
+    } as any);
 
     // Notify participants (in a real app, this would send notifications)
     // For now, we just update the status
@@ -874,7 +875,7 @@ export const cancelRace = async (req: Request, res: Response): Promise<void> => 
       }
     });
   } catch (error) {
-    console.error('Cancel race error:', error);
+    logger.error('Cancel race error', { error });
     res.status(500).json({
       error: {
         message: 'Internal server error while cancelling race.',
@@ -950,7 +951,7 @@ export const completeRace = async (req: Request, res: Response): Promise<void> =
       }
     });
   } catch (error) {
-    console.error('Complete race error:', error);
+    logger.error('Complete race error', { error });
     res.status(500).json({
       error: {
         message: 'Internal server error while completing race.',
