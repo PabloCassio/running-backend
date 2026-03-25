@@ -21,6 +21,7 @@ const config: Config = {
   ],
   coverageDirectory: 'coverage',
   forceExit: true,
+  maxWorkers: 1,
   verbose: true,
 };
 

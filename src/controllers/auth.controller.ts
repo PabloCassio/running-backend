@@ -275,43 +275,24 @@ export const refreshToken = async (req: Request, res: Response): Promise<void> =
  */
 export const getProfile = async (req: Request, res: Response): Promise<void> => {
   try {
-    const user = (req as any).user;
-    
+    const userId = (req as any).userId;
+
+    const user = await User.findByPk(userId);
+
     if (!user) {
-      res.status(401).json({
+      res.status(404).json({
         error: {
-          message: 'Authentication required.',
-          code: 'AUTH_REQUIRED'
+          message: 'User not found.',
+          code: 'USER_NOT_FOUND'
         }
       });
       return;
     }
 
-    // Retornar perfil público do usuário
-    const publicProfile = {
-      id: user.id,
-      email: user.email,
-      username: user.username,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      profileImage: user.profileImage,
-      country: user.country,
-      city: user.city,
-      bio: user.bio,
-      totalDistance: user.totalDistance,
-      totalRaces: user.totalRaces,
-      wins: user.wins,
-      personalBest5k: user.personalBest5k,
-      personalBest10k: user.personalBest10k,
-      personalBestHalfMarathon: user.personalBestHalfMarathon,
-      personalBestMarathon: user.personalBestMarathon,
-      isVerified: user.isVerified,
-    };
-
     res.status(200).json({
       message: 'Profile retrieved successfully.',
       data: {
-        user: publicProfile
+        user: user.getPublicProfile()
       }
     });
   } catch (error: any) {

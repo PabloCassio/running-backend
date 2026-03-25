@@ -5,6 +5,7 @@ import User from '../models/user.model';
 import RaceParticipation from '../models/raceParticipation.model';
 import Race from '../models/race.model';
 import { authenticate, authorize } from '../middleware/auth.middleware';
+import logger from '../utils/logger';
 
 const router = express.Router();
 
@@ -40,7 +41,7 @@ router.get('/:userId', async (req: Request, res: Response) => {
       }
     });
   } catch (error) {
-    console.error('Get user profile error:', error);
+    logger.error('Get user profile error', { error });
     res.status(500).json({
       error: {
         message: 'Internal server error while retrieving user profile.',
@@ -119,7 +120,7 @@ router.get('/:userId/races', async (req: Request, res: Response) => {
       }
     });
   } catch (error) {
-    console.error('Get user races error:', error);
+    logger.error('Get user races error', { error });
     res.status(500).json({
       error: {
         message: 'Internal server error while retrieving user races.',
@@ -186,7 +187,7 @@ router.get('/', authenticate, authorize('admin'), async (req: Request, res: Resp
       }
     });
   } catch (error) {
-    console.error('Get all users error:', error);
+    logger.error('Get all users error', { error });
     res.status(500).json({
       error: {
         message: 'Internal server error while retrieving users.',
@@ -227,7 +228,7 @@ router.put('/:userId', authenticate, authorize('admin'), async (req: Request, re
       }
     });
   } catch (error) {
-    console.error('Update user error:', error);
+    logger.error('Update user error', { error });
     res.status(500).json({
       error: {
         message: 'Internal server error while updating user.',
